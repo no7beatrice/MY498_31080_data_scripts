@@ -1,0 +1,370 @@
+---
+title: "nexis lda perplexity"
+author: "Hua Tu"
+date: "2024-08-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggstream)
+library(dplyr)
+library(tidyr)
+library(tseries)
+library(vars)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(patchwork)
+```
+
+
+```{r}
+media <- read_csv(".../nexis_25.csv")
+public <- read_csv(".../reddit_17.csv")
+```
+
+```{r}
+# Creating agenda number and description columns in the media DataFrame
+media$attr <- ifelse(media$topic %in% c(9,17,20,23), 1,
+                     ifelse(media$topic == 11, 2,
+                     ifelse(media$topic %in% c(3, 5, 8), 3,
+                     ifelse(media$topic %in% c(14, 24), 4,
+                     ifelse(media$topic %in% c(10, 13), 5, 
+                     ifelse(media$topic %in% c(1, 6), 6,
+                     ifelse(media$topic %in% c(4, 15, 18, 19, 21), 7,
+                     ifelse(media$topic %in% c(12, 22), 8,
+                     ifelse(media$topic %in% c(2, 7, 25), 9,
+                     ifelse(media$topic == 16, 10, NA))))))))))
+
+public$attr <- ifelse(public$topic %in% c(2, 9, 15, 17), 1,
+                      ifelse(public$topic %in% c(5, 16), 2,
+                      ifelse(public$topic %in% c(6,14), 3,
+                      ifelse(public$topic %in% c(1, 7), 4,
+                      ifelse(public$topic == 3, 5, 
+                      ifelse(public$topic == 13, 6, 
+                      ifelse(public$topic %in% c(10, 11), 7, 
+                      ifelse(public$topic == 12, 8, 
+                      ifelse(public$topic == 4, 9,
+                      ifelse(public$topic == 8, 10, NA))))))))))
+```
+
+```{r}
+media1 <- media %>% 
+  filter(attr == 1)
+
+media1_sum <- media1 %>% 
+  group_by(date) %>% 
+  summarise(count = sum(count))
+media1_sum$attr <- 1
+
+media2 <- media %>% filter(attr == 2)
+
+media2_sum <- media2 %>% 
+  group_by(date) %>% 
+  summarise(count = sum(count))
+media2_sum$attr <- 2
+
+media3 <- media %>% filter(attr == 3)
+
+media3_sum <- media3 %>% 
+  group_by(date) %>% 
+  summarise(count = sum(count))
+media3_sum$attr <- 3
+
+media4 <- media %>% filter(attr == 4)
+
+media4_sum <- media4 %>% 
+  group_by(date) %>% 
+  summarise(count = sum(count))
+media4_sum$attr <- 4
+
+media5 <- media %>% filter(attr == 5)
+
+media5_sum <- media5 %>% 
+  group_by(date) %>% 
+  summarise(count = sum(count))
+media5_sum$attr <- 5
+
+media6 <- media %>% filter(attr == 6)
+
+media6_sum <- media6 %>% 
+  group_by(date) %>% 
+  summarise(count = sum(count))
+media6_sum$attr <- 6
+
+media7 <- media %>% filter(attr == 7)
+
+media7_sum <- media7 %>% 
+  group_by(date) %>% 
+  summarise(count = sum(count))
+media7_sum$attr <- 7
+
+media8 <- media %>% filter(attr == 8)
+
+media8_sum <- media8 %>% 
+  group_by(date) %>% 
+  summarise(count = sum(count))
+media8_sum$attr <- 8
+
+media9 <- media %>% filter(attr == 9)
+
+media9_sum <- media9 %>% 
+  group_by(date) %>% 
+  summarise(count = sum(count))
+media9_sum$attr <- 9
+
+media10 <- media %>% filter(attr == 10)
+
+media10_sum <- media10 %>% 
+  group_by(date) %>% 
+  summarise(count = sum(count))
+media10_sum$attr <- 10
+```
+
+```{r}
+# rbind the media dataframes
+media_sum <- rbind(media1_sum, media2_sum, media3_sum, media4_sum, media5_sum, media6_sum, media7_sum, media8_sum, media9_sum, media10_sum)
+```
+
+```{r}
+# Define the date range
+start_date <- as.Date("2023-06-01")
+end_date <- as.Date("2024-07-01")
+
+# Create a sequence of dates
+dates <- seq.Date(from = start_date, to = end_date, by = "day")
+
+# Create a dataframe with repeating attributes
+ref_df <- data.frame(
+  date = rep(dates, each = 10),
+  attr = rep(1:10, times = length(dates))
+)
+
+# Merge the reference dataframe with the media_sum dataframe
+media_sum <- merge(ref_df, media_sum, by = c("date", "attr"), all.x = TRUE)
+# fill empty with 0 in count 
+media_sum$count[is.na(media_sum$count)] <- 0
+```
+
+
+```{r}
+public1 <- public %>% 
+  filter(attr == 1)
+
+# count the number of rows for each date
+public1_sum <- public1 %>% 
+  group_by(date) %>% 
+  summarise(count = n())
+public1_sum$attr <- 1
+
+public2 <- public %>% filter(attr == 2)
+
+public2_sum <- public2 %>% 
+  group_by(date) %>% 
+  summarise(count = n())
+public2_sum$attr <- 2
+
+public3 <- public %>% filter(attr == 3)
+
+public3_sum <- public3 %>% 
+  group_by(date) %>% 
+  summarise(count = n())
+
+public3_sum$attr <- 3
+
+public4 <- public %>% filter(attr == 4)
+
+public4_sum <- public4 %>% 
+  group_by(date) %>% 
+  summarise(count = n())
+
+public4_sum$attr <- 4
+
+public5 <- public %>% filter(attr == 5)
+
+public5_sum <- public5 %>% 
+  group_by(date) %>% 
+  summarise(count = n())
+
+public5_sum$attr <- 5
+
+public6 <- public %>% filter(attr == 6)
+
+public6_sum <- public6 %>% 
+  group_by(date) %>% 
+  summarise(count = n())
+
+public6_sum$attr <- 6
+
+public7 <- public %>% filter(attr == 7)
+
+public7_sum <- public7 %>% 
+  group_by(date) %>% 
+  summarise(count = n())
+
+public7_sum$attr <- 7
+
+public8 <- public %>% filter(attr == 8)
+
+public8_sum <- public8 %>% 
+  group_by(date) %>% 
+  summarise(count = n())
+
+public8_sum$attr <- 8
+
+public9 <- public %>% filter(attr == 9)
+
+public9_sum <- public9 %>% 
+  group_by(date) %>% 
+  summarise(count = n())
+
+public9_sum$attr <- 9
+
+public10 <- public %>% filter(attr == 10)
+
+public10_sum <- public10 %>% 
+  group_by(date) %>% 
+  summarise(count = n())
+
+public10_sum$attr <- 10
+
+```
+
+```{r}
+# rbind the media dataframes
+public_sum <- rbind(public1_sum, public2_sum, public3_sum, public4_sum, public5_sum, public6_sum, public7_sum, public8_sum, public9_sum, public10_sum)
+```
+
+```{r}
+# Define the date range
+start_date <- as.Date("2023-06-01")
+end_date <- as.Date("2024-07-01")
+
+# Create a sequence of dates
+dates <- seq.Date(from = start_date, to = end_date, by = "day")
+
+# Create a dataframe with repeating attributes
+ref_df <- data.frame(
+  date = rep(dates, each = 10),
+  attr = rep(1:10, times = length(dates))
+)
+
+# Merge the reference dataframe with the media_sum dataframe
+public_sum <- merge(ref_df, public_sum, by = c("date", "attr"), all.x = TRUE)
+# fill empty with 0 in count 
+public_sum$count[is.na(public_sum$count)] <- 0
+```
+
+```{r}
+
+# Streamgraph for media_sum with legend
+p1 <- ggplot(public_sum, aes(x = date, y = count, fill = factor(attr))) +
+  geom_stream(type = "ridge") +
+  scale_fill_brewer(
+    palette = "Set3",
+    labels = c("Regret and Reflection on Extreme Sentiments", 
+               "Northern Ireland Issues", 
+               "Domestic and International Economic Challenges", 
+               "Trading Challenges", 
+               "Immigration and Residency", 
+               "Politicians and Policies", 
+               "Shifted UK Political Dynamics", 
+               "UK-EU Relations", 
+               "Sovereignty and Identity", 
+               "Public Debate and Disillusionment")
+  ) +
+  theme_minimal(base_family = "Times New Roman") +
+  labs(title = "Attributes of Post-Brexit Public Agenda Over Time", 
+       x = "Date", 
+       y = "Media Agenda",
+       fill = "Attributes Legend") +
+  theme(
+    legend.position = c(0.955, 0.95),  # Position the legend inside the plot (x, y)
+    legend.justification = c("right", "top"),  # Adjust anchor point
+    legend.key.size = unit(0.2, "cm"),  # Make the legend keys smaller
+    legend.text = element_text(size = 5, family = "Times New Roman"),  # Reduce the font size
+    legend.title = element_text(size = 5, family = "Times New Roman"),  # Adjust title size if needed
+    #legend.background = element_rect(fill = "white",color = "light grey", size = 0.5),  # Background rectangle behind the legend
+    plot.title = element_text(family = "Times New Roman"),  # Title font
+    axis.title = element_text(family = "Times New Roman"),  # Axis title font
+    axis.text = element_text(family = "Times New Roman"),  # Axis text font
+    axis.text.x = element_text(hjust = 1, family = "Times New Roman"),  # Adjust x-axis text position
+    panel.grid.major = element_line(color = "grey97"),  # Add major grid lines
+    panel.grid.minor = element_line(color = "grey97")   # Add minor grid lines
+  )
+
+# Streamgraph for public agenda attributes without legend
+p2 <- ggplot(media_sum, aes(x = date, y = count, fill = factor(attr))) +
+  geom_stream(type = "ridge") +
+  scale_fill_brewer(
+    palette = "Set3",
+    labels = c("Regret and Reflection on Extreme Sentiments", 
+               "Northern Ireland Issues", 
+               "Domestic and International Economic Challenges", 
+               "Trading Challenges", 
+               "Immigration and Residency", 
+               "Politicians and Policies", 
+               "Shifted UK Political Dynamics", 
+               "UK-EU Relations", 
+               "Sovereignty and Identity", 
+               "Public Debate and Disillusionment")
+  ) +
+  theme_minimal(base_family = "Times New Roman") +
+  labs(title = "Attributes of Post-Brexit Media Agenda Over Time", 
+       x = "Date", 
+       y = "Public Agenda") +
+  theme(
+    legend.position = "none",  # Remove legend from this plot 
+    plot.title = element_text(family = "Times New Roman"),  # Title font
+    axis.title = element_text(family = "Times New Roman"),  # Axis title font
+    axis.text = element_text(family = "Times New Roman"),  # Axis text font
+    axis.text.x = element_text(hjust = 1, family = "Times New Roman"),  # Adjust x-axis text position
+    panel.grid.major = element_line(color = "grey97"),  # Add major grid lines
+    panel.grid.minor = element_line(color = "grey97")   # Add minor grid lines
+  )
+
+# Combine the plots in a 2x1 grid
+combined_plot <- p2 / p1
+
+# Print the combined plot
+print(combined_plot)
+```
+
+
+```{r}
+# save the media and public dataframes to csv files
+write.csv(media_sum, ".../streamgraph_media.csv", row.names = FALSE)
+write.csv(public_sum, ".../streamgraph_public.csv", row.names = FALSE)
+```
+
+```{r}
+# Summarize the total count for each attr
+summary_media <- media_sum %>%
+  group_by(attr) %>%
+  summarise(total_count = sum(count)) %>%
+  ungroup() %>%
+  # Calculate the proportion of each attr
+  mutate(proportion = total_count / sum(total_count)) %>% 
+  mutate(proportion = round(proportion, 3))
+
+# Display the summary dataframe
+print(summary_media)
+```
+
+```{r}
+# Summarize the total count for each attr
+summary_public <- public_sum %>%
+  group_by(attr) %>%
+  summarise(total_count = sum(count)) %>%
+  ungroup() %>%
+  # Calculate the proportion of each attr
+  mutate(proportion = total_count / sum(total_count)) %>% 
+  mutate(proportion = round(proportion, 3))
+
+# Display the summary dataframe
+print(summary_public)
+```

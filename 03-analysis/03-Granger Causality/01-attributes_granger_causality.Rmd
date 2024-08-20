@@ -1,0 +1,811 @@
+---
+title: "new granger"
+author: "Hua Tu"
+date: "2024-08-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggstream)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(tseries)
+library(vars)
+library(dplyr)
+library(readr)
+library(htmlwidgets)
+```
+
+
+```{r}
+media <- read_csv("/Users/iris/Documents/CAPSTONE/final_model_data_save/nexis_25.csv")
+public <- read_csv("/Users/iris/Documents/CAPSTONE/final_model_data_save/reddit_17.csv")
+```
+
+```{r}
+media_attr <- media %>%
+  group_by(date, topic) %>%
+  summarize(count = sum(count), .groups = 'drop') %>%
+  dplyr::select(date, topic, count)
+
+
+for (i in 1:25) {
+  # for each i, media_a of i be filter(media_attr, topic == i). for 1-10, use 01,02, etc. for 10-25, just use 11, 12
+  assign(paste("media_a", ifelse(i < 10, paste("0", i, sep = ""), i), sep = ""), filter(media_attr, topic == i))
+}
+```
+
+```{r}
+public_attr <- public %>%
+  group_by(date, topic) %>%
+  summarise(count = n(), .groups = "drop")
+
+for (i in 1:17) {
+  # for each i, media_a of i be filter(media_attr, topic == i). for 1-10, use 01,02, etc. for 10-25, just use 11, 12
+  assign(paste("public_a", ifelse(i < 10, paste("0", i, sep = ""), i), sep = ""), filter(public_attr, topic == i))
+}
+```
+
+
+
+```{r}
+# create a df with one column date from 2023-06-01 to 2024-07-01
+date_df <- data.frame(date = seq.Date(as.Date("2023-06-01"), as.Date("2024-07-01"), by = "day"))
+
+# join date_df with public_a01, replace NA with 0
+public_a01 <- merge(date_df, public_a01, by = "date", all.x = TRUE) %>% 
+  dplyr::select(date, count) %>% 
+  replace_na(list(count = 0))
+
+public_a02 <- merge(date_df, public_a02, by = "date", all.x = TRUE) %>% 
+  dplyr::select(date, count) %>% 
+  replace_na(list(count = 0))
+
+public_a03 <- merge(date_df, public_a03, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a04 <- merge(date_df, public_a04, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a05 <- merge(date_df, public_a05, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a06 <- merge(date_df, public_a06, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a07 <- merge(date_df, public_a07, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a08 <- merge(date_df, public_a08, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a09 <- merge(date_df, public_a09, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a10 <- merge(date_df, public_a10, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a11 <- merge(date_df, public_a11, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a12 <- merge(date_df, public_a12, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a13 <- merge(date_df, public_a13, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a14 <- merge(date_df, public_a14, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a15 <- merge(date_df, public_a15, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a16 <- merge(date_df, public_a16, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+public_a17 <- merge(date_df, public_a17, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+```
+
+```{r}
+# create a df with one column date from 2023-06-01 to 2024-07-01
+date_df <- data.frame(date = seq.Date(as.Date("2023-06-01"), as.Date("2024-07-01"), by = "day"))
+
+# join date_df with public_a01, replace NA with 0
+media_a01 <- merge(date_df, media_a01, by = "date", all.x = TRUE) %>% 
+  dplyr::select(date, count) %>% 
+  replace_na(list(count = 0))
+
+media_a02 <- merge(date_df, media_a02, by = "date", all.x = TRUE) %>% 
+  dplyr::select(date, count) %>% 
+  replace_na(list(count = 0))
+
+media_a03 <- merge(date_df, media_a03, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a04 <- merge(date_df, media_a04, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a05 <- merge(date_df, media_a05, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a06 <- merge(date_df, media_a06, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a07 <- merge(date_df, media_a07, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a08 <- merge(date_df, media_a08, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a09 <- merge(date_df, media_a09, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a10 <- merge(date_df, media_a10, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a11 <- merge(date_df, media_a11, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a12 <- merge(date_df, media_a12, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a13 <- merge(date_df, media_a13, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a14 <- merge(date_df, media_a14, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a15 <- merge(date_df, media_a15, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a16 <- merge(date_df, media_a16, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a17 <- merge(date_df, media_a17, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a18 <- merge(date_df, media_a18, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a19 <- merge(date_df, media_a19, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a20 <- merge(date_df, media_a20, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a21 <- merge(date_df, media_a21, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a22 <- merge(date_df, media_a22, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a23 <- merge(date_df, media_a23, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a24 <- merge(date_df, media_a24, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+media_a25 <- merge(date_df, media_a25, by = "date", all.x = TRUE) %>%
+  dplyr::select(date, count) %>%
+  replace_na(list(count = 0))
+
+```
+
+
+## media(9,17,20,23) to public(2,9,15,17)
+
+```{r}
+media_a09_17_20_23 <- rbind(media_a09, media_a17, media_a20, media_a23)
+
+# drop topic column, merge count with same date
+media_a09_17_20_23 <- media_a09_17_20_23 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+media_a09_17_20_23 <- media_a09_17_20_23 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+media_ts09_17_20_23 <- ts(media_a09_17_20_23, start = c(2023, 152), frequency = 365)
+adf.test(media_ts09_17_20_23[,2])
+```
+
+```{r}
+public_a02_09_15_17 <- rbind(public_a02, public_a09, public_a15, public_a17)
+
+# drop topic column, merge count with same date
+public_a02_09_15_17 <- public_a02_09_15_17 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+public_a02_09_15_17 <- public_a02_09_15_17 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+public_ts02_09_15_17 <- ts(public_a02_09_15_17, start = c(2023, 152), frequency = 365)
+adf.test(public_ts02_09_15_17[,2])
+```
+
+```{r}
+# test granger causality between media_a09_17_20_23 and public_a02_08
+combined_data <- cbind(media_ts09_17_20_23, public_ts02_09_15_17)
+combined_data <- combined_data[, c(2, 4)]
+colnames(combined_data) <- c("media", "public")
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+##  media(11) to public(5,16)
+
+```{r}
+media_a11 <- rbind(media_a11)
+
+# drop topic column, merge count with same date
+media_a11 <- media_a11 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+media_a11 <- media_a11 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+media_ts11 <- ts(media_a11, start = c(2023, 152), frequency = 365)
+adf.test(media_ts11[,2])
+```
+
+
+```{r}
+public_a05_16 <- rbind(public_a05, public_a16)
+
+# drop topic column, merge count with same date
+public_a05_16 <- public_a05_16 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+public_a05_16 <- public_a05_16 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+public_ts05_16 <- ts(public_a05_16, start = c(2023, 152), frequency = 365)
+adf.test(public_ts05_16[,2])
+```
+
+
+```{r}
+
+combined_data <- cbind(media_ts11, public_ts05_16)
+combined_data <- combined_data[, c(2, 4)]
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+## media(3,5,8) to public(6, 14)
+
+
+```{r}
+media_a03_05_08 <- rbind(media_a03, media_a05, media_a08)
+
+# drop topic column, merge count with same date
+media_a03_05_08 <- media_a03_05_08 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+media_a03_05_08 <- media_a03_05_08 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+media_ts03_05_08 <- ts(media_a03_05_08, start = c(2023, 152), frequency = 365)
+adf.test(media_ts03_05_08[,2])
+```
+
+
+```{r}
+public_a06_14 <- rbind(public_a06, public_a14)
+
+# drop topic column, merge count with same date
+public_a06_14 <- public_a06_14 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+public_a06_14 <- public_a06_14 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+public_ts06_14 <- ts(public_a06_14, start = c(2023, 152), frequency = 365)
+adf.test(public_ts06_14[,2])
+```
+
+
+```{r}
+combined_data <- cbind(media_ts03_05_08, public_ts06_14)
+combined_data <- combined_data[, c(2, 4)]
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+
+## media (14, 24) to public(1,7)
+
+
+```{r}
+media_a14_24 <- rbind(media_a14, media_a24)
+
+# drop topic column, merge count with same date
+media_a14_24 <- media_a14_24 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+media_a14_24 <- media_a14_24 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+media_ts14_24 <- ts(media_a14_24, start = c(2023, 152), frequency = 365)
+adf.test(media_ts14_24[,2])
+```
+
+
+```{r}
+public_a01_07 <- rbind(public_a01, public_a07)
+
+# drop topic column, merge count with same date
+public_a01_07 <- public_a01_07 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+public_a01_07 <- public_a01_07 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+public_ts01_07 <- ts(public_a01_07, start = c(2023, 152), frequency = 365)
+adf.test(public_ts01_07[,2])
+```
+
+
+```{r}
+
+combined_data <- cbind(media_ts14_24, public_ts01_07)
+combined_data <- combined_data[, c(2, 4)]
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+## media (10, 13) to public(3)
+
+```{r}
+media_a10_13 <- rbind( media_a10, media_a13)
+
+# drop topic column, merge count with same date
+media_a10_13 <- media_a10_13 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+media_a10_13 <- media_a10_13 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+media_ts10_13 <- ts(media_a10_13, start = c(2023, 152), frequency = 365)
+adf.test(media_ts10_13[,2])
+```
+
+
+```{r}
+public_a03 <- rbind(public_a03)
+
+# drop topic column, merge count with same date
+public_a03 <- public_a03 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+public_a03 <- public_a03 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+public_ts03 <- ts(public_a03, start = c(2023, 152), frequency = 365)
+adf.test(public_ts03[,2])
+```
+
+
+```{r}
+
+combined_data <- cbind(media_ts10_13, public_ts03)
+combined_data <- combined_data[, c(2, 4)]
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+## media (1,6) to public(13)
+
+```{r}
+media_a01_06 <- rbind(media_a01, media_a06)
+
+# drop topic column, merge count with same date
+media_a01_06 <- media_a01_06 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+media_a01_06 <- media_a01_06 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+media_ts01_06 <- ts(media_a01_06, start = c(2023, 152), frequency = 365)
+adf.test(media_ts01_06[,2])
+```
+
+
+```{r}
+public_a13 <- rbind(public_a13)
+
+# drop topic column, merge count with same date
+public_a13 <- public_a13 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+public_a13 <- public_a13 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+public_ts13 <- ts(public_a13, start = c(2023, 152), frequency = 365)
+adf.test(public_ts13[,2])
+```
+
+
+```{r}
+combined_data <- cbind(media_ts01_06, public_ts13)
+combined_data <- combined_data[, c(2, 4)]
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+## media (4, 15, 18, 19, 21) to public(10,11)
+
+```{r}
+media_a04_05_18_19_21 <- rbind(media_a04, media_a05, media_a18, media_a19, media_a21)
+
+# drop topic column, merge count with same date
+media_a04_05_18_19_21 <- media_a04_05_18_19_21 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+media_a04_05_18_19_21 <- media_a04_05_18_19_21 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+media_ts04_05_18_19_21 <- ts(media_a04_05_18_19_21, start = c(2023, 152), frequency = 365)
+adf.test(media_ts04_05_18_19_21[,2])
+```
+
+
+```{r}
+public_a10_11 <- rbind(public_a10, public_a11)
+
+# drop topic column, merge count with same date
+public_a10_11 <- public_a10_11 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+public_a10_11 <- public_a10_11 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+public_ts10_11 <- ts(public_a10_11, start = c(2023, 152), frequency = 365)
+adf.test(public_ts10_11[,2])
+```
+
+
+```{r}
+combined_data <- cbind(media_ts04_05_18_19_21, public_ts10_11)
+combined_data <- combined_data[, c(2, 4)]
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+## media (12, 22) to public(12)
+
+```{r}
+media_a12_22<- rbind(media_a12, media_a22 )
+
+# drop topic column, merge count with same date
+media_a12_22 <- media_a12_22 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+media_a12_22 <- media_a12_22 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+media_ts12_22 <- ts(media_a12_22, start = c(2023, 152), frequency = 365)
+adf.test(media_ts12_22[,2])
+media_ts12_22 <- diff(media_ts12_22)
+
+```
+
+
+```{r}
+public_a12 <- rbind(public_a12)
+
+# drop topic column, merge count with same date
+public_a12 <- public_a12 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+public_a12 <- public_a12 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+public_ts12 <- ts(public_a12, start = c(2023, 152), frequency = 365)
+adf.test(public_ts12[,2])
+```
+
+
+```{r}
+combined_data <- cbind(media_ts12_22, public_ts12)
+combined_data <- combined_data[, c(2, 4)]
+colnames(combined_data) <- c("media", "public")
+combined_data <- na.omit(combined_data)
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+
+
+
+## media(2, 7, 25) public(4)
+```{r}
+media_a02_07_25 <- rbind(media_a02, media_a07, media_a25)
+
+# drop topic column, merge count with same date
+media_a02_07_25 <- media_a02_07_25 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+media_a02_07_25 <- media_a02_07_25 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+media_ts02_07_25 <- ts(media_a02_07_25, start = c(2023, 152), frequency = 365)
+adf.test(media_ts02_07_25[,2])
+```
+
+
+```{r}
+public_a04 <- rbind(public_a04)
+
+# drop topic column, merge count with same date
+public_a04 <- public_a04 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+public_a04 <- public_a04 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+public_ts04 <- ts(public_a04, start = c(2023, 152), frequency = 365)
+adf.test(public_ts04[,2])
+```
+
+
+```{r}
+
+combined_data <- cbind(media_ts02_07_25, public_ts04)
+combined_data <- combined_data[, c(2, 4)]
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+## media(16) public(08)
+```{r}
+media_a16 <- rbind(media_a16)
+
+# drop topic column, merge count with same date
+media_a16 <- media_a16 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+media_a16 <- media_a16 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+media_ts16 <- ts(media_a16, start = c(2023, 152), frequency = 365)
+adf.test(media_ts16[,2])
+```
+
+
+```{r}
+public_a08 <- rbind(public_a08)
+
+# drop topic column, merge count with same date
+public_a08 <- public_a08 %>%
+  group_by(date) %>%
+  summarise(count = sum(count), .groups = "drop")
+
+public_a08 <- public_a08 %>%
+  complete(date = seq.Date(min(date), max(date), by = "day")) %>%
+  replace_na(list(count = 0))
+
+public_ts08 <- ts(public_a08, start = c(2023, 152), frequency = 365)
+adf.test(public_ts08[,2])
+```
+
+
+```{r}
+combined_data <- cbind(media_ts16, public_ts08)
+combined_data <- combined_data[, c(2, 4)]
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+
+
+
+

@@ -1,0 +1,273 @@
+---
+title: "process nexis files"
+author: "Hua Tu"
+date: "2024-07-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### remove duplicate files
+
+```{r}
+library(fs)
+library(stringr)
+library(dplyr)
+library(officer)
+library(stringr)
+```
+
+### transform docx files into plain text files
+
+```{r}
+# define a function to transform all docx files in the folder into plain text files
+extract_text_from_docx <- function(doc_path) {
+    # Load the DOCX file
+    doc <- read_docx(doc_path)
+    
+    # Extract all paragraphs as text
+    paragraphs <- docx_summary(doc)$text
+    
+    # Combine all paragraphs into a single string with blank space
+    text_content <- paste(paragraphs, collapse = " ")
+    return(text_content)
+}
+
+```
+
+### extract body text from nexis files
+
+```{r}
+# define the function to extract body text from nexis files and load date
+extract_body_text <- function(file_path) {
+    # Read the content of the TXT file
+    text_content <- readLines(file_path)
+    text_content <- paste(text_content, collapse = "\n")
+
+    # Find the position of the "Body" and "Load-Date" sections
+    body_start <- str_locate(text_content, regex("(?i)Body"))[1, "end"]
+    load_date_start <- str_locate(text_content, regex("(?i)Load-Date"))[1, "start"]
+
+    # Extract text between "Body" and "Load-Date"
+    if (!is.na(body_start) && !is.na(load_date_start) && body_start < load_date_start) {
+        extracted_text <- str_sub(text_content, body_start + 1, load_date_start - 1)
+    } else {
+        extracted_text <- ""
+    }
+    
+    # extract load date
+    load_date <- str_extract(text_content, regex("(?i)Load-Date:.*"))
+
+    return(extracted_text)
+}
+```
+
+```{r}
+library(stringr)
+
+extract_body_text_and_load_date <- function(file_path) {
+    # Read the content of the TXT file
+    text_content <- readLines(file_path)
+    text_content <- paste(text_content, collapse = "\n")
+
+    # Find the position of the "Body" and "Load-Date" sections
+    body_start <- str_locate(text_content, regex("(?i)Body"))[1, "end"]
+    load_date_start <- str_locate(text_content, regex("(?i)Load-Date"))[1, "start"]
+
+    # Extract text between "Body" and "Load-Date"
+    extracted_text <- ""
+    if (!is.na(body_start) && !is.na(load_date_start) && body_start < load_date_start) {
+        extracted_text <- str_sub(text_content, body_start + 1, load_date_start - 1)
+    }
+
+    load_date_line <- str_extract(text_content, regex("(?i)Load-Date:.*"))
+    load_date <- str_remove(load_date_line, "Load-Date:\\s*")
+    load_date <- str_trim(str_remove(load_date, "End of Document.*"))
+
+    return(list(body_text = extracted_text, load_date = load_date))
+}
+
+```
+
+
+```{r}
+# Directory containing the TXT files
+dir_path <- "/Users/iris/Documents/CAPSTONE/nexis/2023 test/1_500"
+
+# Get a list of all TXT files in the directory
+txt_files <- list.files(path = dir_path, pattern = "\\.txt$", full.names = TRUE)
+
+# Loop through each file, extract text, and fill into a dataframe (one column for text, one column for load date)
+text_data <- data.frame(text = character(), load_date = character(), stringsAsFactors = FALSE)
+
+for (file in txt_files) {
+    # Extract the body text and load date
+    result <- extract_body_text_and_load_date(file)
+    body_text <- result$body_text
+    load_date <- result$load_date
+    
+    # Add the extracted text and load date to the dataframe
+    text_data <- rbind(text_data, data.frame(text = body_text, load_date = load_date))
+}
+```
+
+```{r}
+main_dir_path <- ".../01-news_reports"
+
+# get a list of all files in the directory
+all_folders <- list.files(path = main_dir_path, full.names = TRUE)
+
+for (folder in all_folders) {
+  dir_path <- folder
+  
+  docx_files <- list.files(path = dir_path, pattern = "\\.DOCX$", full.names = TRUE)
+
+  
+  # Loop through each file, extract text, save as plain text file, and delete the DOCX file
+  for (file in docx_files) {
+      # Extract the text from the DOCX file
+      text_content <- extract_text_from_docx(file)
+      
+      # Define the output file path
+      output_file <- str_replace(file, "\\.DOCX$", ".txt")
+      
+      # Write the text content to the plain text file
+      writeLines(text_content, output_file)
+      
+      # Delete the DOCX file
+      file.remove(file)
+  }
+
+  
+  txt_files <- list.files(path = dir_path, pattern = "\\.txt$", full.names = TRUE)
+  
+  # create a df for each folder 
+  text_data <- data.frame(text = character(), load_date = character(), stringsAsFactors = FALSE)
+  
+  
+  for (file in txt_files) {
+      # Extract the body text and load date
+      result <- extract_body_text_and_load_date(file)
+      body_text <- result$body_text
+      # transform the date format from June 2, 2024 to 2024-06-02
+      load_date <- result$load_date %>% 
+        as.Date(original_date, format = "%B %d, %Y") %>% 
+        format("%Y-%m-%d")
+    
+      
+      # Add the extracted text and load date to the dataframe
+      text_data <- rbind(text_data, data.frame(text = body_text, load_date = load_date))
+  }
+  
+  #  save the df as a csv file in the path "/Users/iris/Documents/CAPSTONE/nexis/test_extracted_sep"
+  write.csv(text_data, paste0(".../news_sep/", basename(folder), ".csv"), row.names = FALSE)
+}
+```
+
+```{r}
+# open the csv files in the directory
+dir_path <- ".../news_sep"
+
+# get a list of all files in the directory
+all_files <- list.files(path = dir_path, full.names = TRUE)
+
+# bind all the csv files into one df
+all_data <- data.frame(text = character(), load_date = character(), stringsAsFactors = FALSE)
+
+for (file in all_files) {
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  all_data <- rbind(all_data, data)
+}
+
+# sort by date
+all_data$load_date <- as.Date(all_data$load_date, format = "%Y-%m-%d")
+
+all_data_sorted <- all_data[order(all_data$load_date), ]
+
+nexis_body_date <- all_data_sorted %>% 
+  rename(
+    text = text,
+    date = load_date
+  ) 
+
+# save the nexis_body_date as a csv file in the path "/Users/iris/Documents/CAPSTONE/nexis/final_nexis_text_date_data"
+write.csv(nexis_body_date, ".../alt5_nexis_body_date.csv", row.names = FALSE)
+```
+
+```{r}
+nexis <- read_csv(".../alt5_nexis_body_date.csv")
+```
+
+```{r}
+nexis <- nexis %>%
+  group_by(text, date) %>%
+  summarise(count = n(), .groups = 'drop')
+```
+
+```{r}
+clean_text <- function(text) {
+  text <- tolower(text)
+  text <- gsub("\\bthey're\\b", "they are", text)
+  text <- gsub("\\bi'm\\b", "i am", text)
+  text <- gsub("\\bdon't\\b", "do not", text)
+  text <- gsub("\\bwouldn't\\b", "would not", text)
+  text <- gsub("\\bit's\\b", "it is", text)
+  text <- gsub("\\bcan't\\b", "can not", text)
+  text <- gsub("\\baren't\\b", "are not", text)
+  text <- gsub("\\bwasn't\\b", "was not", text)
+  text <- gsub("\\bweren't\\b", "were not", text)
+  text <- gsub("\\bhasn't\\b", "has not", text)
+  text <- gsub("\\bhaven't\\b", "have not", text)
+  text <- gsub("\\bhadn't\\b", "had not", text)
+  text <- gsub("\\bwon't\\b", "will not", text)
+  text <- gsub("\\bshouldn't\\b", "should not", text)
+  text <- gsub("\\bdoesn't\\b", "does not", text)
+  text <- gsub("\\bdidn't\\b", "did not", text)
+  text <- gsub("\\bmustn't\\b", "must not", text)
+  text <- gsub("\\bain't\\b", "am not", text)
+  text <- gsub("\\[removed\\]|\\[deleted\\]", " ", text)
+
+  
+  text <- gsub("http[s]?://[^ ]+", "", text)
+  text <- gsub("[ ]{2,}", " ", text)
+  
+  # Remove punctuation except within words
+  text <- gsub("(?<!\\w)-|[^\\w\\s-]", "", text, perl = TRUE)
+
+  # Remove extra spaces that might have been created
+  text <- gsub("[ ]{2,}", " ", text)
+
+  # Remove single characters
+  text <- gsub("\\b[a-z]\\b", "", text)
+
+  text <- removeWords(text, stopwords("en"))
+  text <- gsub("[ ]{2,}", " ", text)
+  
+  text <- removeNumbers(text)
+  
+  text <- gsub("\\s+", " ", trimws(text))
+  # #text <- stripWhitespace(text)
+  # text <- removeWords(text, c("“’s"))
+  return(text)
+}
+
+# Define the start and end dates for the filter
+start_date <- as.Date("2023-06-01")
+end_date <- as.Date("2024-07-01")
+
+# Filter the dataframe for rows within the date range
+nexis <- nexis[nexis$date >= start_date & nexis$date <= end_date, ]
+
+# delete the CommentText column after clean_text function
+nexis$CleanedText <- sapply(nexis$text, clean_text)
+
+# save the cleaned data to a csv file again
+write.csv(nexis, file = "/Users/iris/Documents/CAPSTONE/nexis/final_nexis_text_date_data/alt5_nexis_body_date.csv", row.names = FALSE)
+
+#nexis <- read.csv("/Users/iris/Documents/CAPSTONE/nexis/final_nexis_text_date_data/alt5_nexis_body_date.csv")
+
+```
+
+

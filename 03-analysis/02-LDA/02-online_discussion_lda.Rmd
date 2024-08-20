@@ -1,0 +1,143 @@
+---
+title: "Untitled"
+author: "Hua Tu"
+date: "2024-08-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+library(tm)
+library(quanteda)
+library(topicmodels)
+library(textmineR)
+library(stringr)
+library(ggplot2)
+library(Matrix)
+library(SnowballC)
+library(seededlda)
+```
+
+
+```{r}
+# read the csv file
+reddit <- read.csv(".../reddit.csv", header = TRUE)
+```
+
+
+```{r}
+corp <- corpus(reddit, text_field = "text")
+
+toks_reddit <- tokens(corp) 
+dfm_reddit<- dfm(toks_reddit) %>% 
+  dfm_wordstem() 
+
+dtm_reddit <- DocumentTermMatrix(corp)
+```
+
+
+```{r}
+# Define a range of topics
+k_values <- seq(2, 30, by = 1)
+
+# Initialize a vector to store perplexity values
+perplexity_values <- numeric(length(k_values))
+
+# Loop over different numbers of topics
+for (i in seq_along(k_values)) {
+  lda_model <- LDA(dtm_reddit, k = k_values[i], control = list(seed = 1234))
+  perplexity_values[i] <- perplexity(lda_model)
+  message(perplexity_values[i])
+}
+
+# Create a data frame for plotting
+perplexity_df <- data.frame(
+  Topics = k_values,
+  Perplexity = perplexity_values
+)
+
+# Plot the perplexity graph using ggplot2
+ggplot(perplexity_df, aes(x = Topics, y = Perplexity)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Perplexity by Number of Topics for Online Discussion",
+       x = "Number of Topics",
+       y = "Perplexity") +
+  theme_minimal()
+```
+
+```{r}
+lda_model_public <- LDA(dtm_reddit, k = 17, control = list(seed = 1234))
+
+saveRDS(lda_model_public, "/Users/iris/Documents/CAPSTONE/final_model_data_save/tmod_lda_reddit_17.rds")
+
+# lda_model_public <- readRDS("/Users/iris/Documents/CAPSTONE/final_model_data_save/tmod_lda_reddit_17.rds")
+```
+
+```{r}
+beta_matrix <- exp(lda_model_public@beta)
+terms <- lda_model_public@terms
+
+# Number of top terms to extract per topic
+top_n <- 10
+
+# For each topic, extract the top `n` terms
+top_terms <- apply(beta_matrix, 1, function(x) {
+  top_indices <- order(x, decreasing = TRUE)[1:top_n]
+  terms[top_indices]
+})
+```
+
+```{r}
+gamma_matrix <- lda_model_public@gamma
+
+# Number of top documents to extract per topic
+top_n_docs <- 25
+
+# For each topic, find the top `n` documents
+top_docs <- apply(gamma_matrix, 2, function(x) {
+  top_indices <- order(x, decreasing = TRUE)[1:top_n_docs]
+  top_indices
+})
+
+# Convert to a list for easier viewing
+top_docs_list <- lapply(1:ncol(gamma_matrix), function(i) {
+  list(
+    topic = i,
+    documents = top_docs[, i]
+  )
+})
+```
+
+```{r}
+for (i in top_docs_list[[17]][["documents"]]) {
+  print(reddit$origin[i])
+}
+```
+
+```{r}
+# Extract the topic probability matrix (gamma)
+topic_probabilities <- lda_model_public@gamma
+
+# Assign each document the most probable topic
+most_probable_topic <- apply(topic_probabilities, 1, which.max)
+
+# View the most probable topic for each document
+most_probable_topic
+
+# Add the most probable topic to the original data frame
+reddit$topic <- most_probable_topic
+
+```
+
+```{r}
+write.csv(reddit, file = "/Users/iris/Documents/CAPSTONE/final_model_data_save/reddit_17.csv", row.names = FALSE)
+
+```
+

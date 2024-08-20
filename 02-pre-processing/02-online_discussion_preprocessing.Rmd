@@ -1,0 +1,127 @@
+---
+title: "02-online_discussion_preprocess"
+author: "Hua Tu"
+date: "2024-08-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+library(tm)
+library(quanteda)
+library(topicmodels)
+library(textmineR)
+library(stringr)
+library(ggplot2)
+library(Matrix)
+library(SnowballC)
+library(seededlda)
+```
+
+```{r}
+comments <- read_csv(".../02-online_discussion.csv")
+```
+
+
+```{r}
+# rename the columns to remove spaces
+comments <- comments %>%
+  rename(PostID = `Post ID`, CommentID = `Comment ID`, CommentText = `Comment Text`, CommentScore = `Comment Score`, CommentCreatedAt = `Comment Created At`, CommentAuthor = `Comment Author`)
+
+# remove the rows where CommentAuthor is AutoModerator
+comments <- comments %>%
+  filter(CommentAuthor != "AutoModerator")
+
+comments <- comments %>% 
+  filter(CommentAuthor != "brexit-ModTeam")
+
+comments$CommentCreatedAt <- as.Date(comments$CommentCreatedAt, format = "%Y-%m-%d")
+
+# Define the start and end dates for the filter
+start_date <- as.Date("2023-06-01")
+end_date <- as.Date("2024-07-01")
+
+# Filter the dataframe for rows within the date range
+comments <- comments[comments$CommentCreatedAt >= start_date & comments$CommentCreatedAt <= end_date, ]
+
+```
+
+
+
+```{r}
+clean_text <- function(text) {
+  text <- tolower(text)
+  text <- gsub("\\bthey're\\b", "they are", text)
+  text <- gsub("\\bi'm\\b", "i am", text)
+  text <- gsub("\\bdon't\\b", "do not", text)
+  text <- gsub("\\bwouldn't\\b", "would not", text)
+  text <- gsub("\\bit's\\b", "it is", text)
+  text <- gsub("\\bcan't\\b", "can not", text)
+  text <- gsub("\\baren't\\b", "are not", text)
+  text <- gsub("\\bwasn't\\b", "was not", text)
+  text <- gsub("\\bweren't\\b", "were not", text)
+  text <- gsub("\\bhasn't\\b", "has not", text)
+  text <- gsub("\\bhaven't\\b", "have not", text)
+  text <- gsub("\\bhadn't\\b", "had not", text)
+  text <- gsub("\\bwon't\\b", "will not", text)
+  text <- gsub("\\bshouldn't\\b", "should not", text)
+  text <- gsub("\\bdoesn't\\b", "does not", text)
+  text <- gsub("\\bdidn't\\b", "did not", text)
+  text <- gsub("\\bmustn't\\b", "must not", text)
+  text <- gsub("\\bain't\\b", "am not", text)
+  text <- gsub("\\[removed\\]|\\[deleted\\]", " ", text)
+
+  
+  text <- gsub("http[s]?://[^ ]+", "", text)
+  text <- gsub("[ ]{2,}", " ", text)
+  
+  # Remove punctuation except within words
+  text <- gsub("(?<!\\w)-|[^\\w\\s-]", "", text, perl = TRUE)
+
+  # Remove extra spaces that might have been created
+  text <- gsub("[ ]{2,}", " ", text)
+
+  # Remove single characters
+  text <- gsub("\\b[a-z]\\b", "", text)
+
+  text <- removeWords(text, stopwords("en"))
+  text <- gsub("[ ]{2,}", " ", text)
+  
+  text <- removeNumbers(text)
+  
+  text <- gsub("\\s+", " ", trimws(text))
+
+  return(text)
+}
+
+
+comments$CleanedText <- sapply(comments$CommentText, clean_text)
+
+
+# when there is fewer than 4 tokens in CleanText in comments df, remove the row
+comments <- comments %>%
+  filter(str_count(CleanedText, "\\w+") > 7)
+```
+
+```{r}
+# select cleaned text and date from comments df
+reddit <- comments %>%
+  filter(!is.na(CleanedText)) %>% 
+  select(CleanedText, CommentCreatedAt, CommentText) %>% 
+  rename(text = CleanedText, date = CommentCreatedAt, origin = CommentText)
+
+# save the tibble to a csv file
+write.csv(reddit, ".../reddit.csv", row.names = FALSE)
+
+# read the csv file
+# reddit <- read.csv(".../reddit.csv", header = TRUE)
+
+```
+
+

@@ -1,0 +1,303 @@
+---
+title: "sentiment agenda"
+author: "Hua Tu"
+date: "2024-08-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggstream)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(tseries)
+library(vars)
+library(dplyr)
+library(readr)
+library(tidytext)
+library(tidyverse)
+library(quanteda)
+```
+
+```{r}
+media <- read_csv("/Users/iris/Documents/CAPSTONE/final_model_data_save/nexis_25.csv")
+public <- read_csv("/Users/iris/Documents/CAPSTONE/final_model_data_save/reddit_17.csv")
+```
+
+### revised nrc_eil
+```{r}
+nrc_eil <- textdata::lexicon_nrc_eil()
+media_id <- media %>%
+  mutate(document_id = row_number()) %>% 
+  mutate(length = ntoken(tokens(text)))
+
+
+emotion_counts_media <- media_id %>%
+  unnest_tokens(word, CleanedText) %>%    # Tokenize the text into words
+  inner_join(nrc_eil, by = c("word" = "term")) %>% # Join with NRC EIL lexicon
+  mutate(countbyscore = score*count*100/length) %>% 
+  group_by(document_id, AffectDimension) %>%  # Group by document_id and category (emotion)
+  summarise(emotion_score = sum(countbyscore), .groups = 'drop') %>%  # Count occurrences of each emotion
+  spread(AffectDimension, emotion_score, fill = 0)    # Spread the emotions into columns
+
+```
+
+```{r}
+media_emotion_date <- cbind(media, emotion_counts_media) %>% 
+  dplyr::select(date, anger, fear, joy, sadness)
+```
+
+
+```{r}
+media_anger <- media_emotion_date %>% 
+  dplyr::select(date, anger) %>% 
+  group_by(date) %>%
+  summarise(count = sum(anger))
+
+media_fear <- media_emotion_date %>%
+  dplyr::select(date, fear) %>% 
+  group_by(date) %>%
+  summarise(count = sum(fear))
+
+media_joy <- media_emotion_date %>%
+  dplyr::select(date, joy) %>% 
+  group_by(date) %>%
+  summarise(count = sum(joy))
+
+media_sadness <- media_emotion_date %>%
+  dplyr::select(date, sadness) %>% 
+  group_by(date) %>%
+  summarise(count = sum(sadness))
+```
+
+```{r}
+# create a df with one column date from 2023-06-01 to 2024-07-01
+date_df <- data.frame(date = seq.Date(as.Date("2023-06-01"), as.Date("2024-07-01"), by = "day"))
+
+# join date_df with public_a01, replace NA with 0
+media_emotion_anger <- merge(date_df, media_anger, by = "date", all.x = TRUE) %>% 
+  # replace NA with 0 in count column
+  replace_na(list(count = 0)) 
+
+media_emotion_fear <- merge(date_df, media_fear, by = "date", all.x = TRUE) %>% 
+  # replace NA with 0 in count column
+  replace_na(list(count = 0)) 
+
+media_emotion_joy <- merge(date_df, media_joy, by = "date", all.x = TRUE) %>% 
+  # replace NA with 0 in count column
+  replace_na(list(count = 0)) 
+
+media_emotion_sadness <- merge(date_df, media_sadness, by = "date", all.x = TRUE) %>% 
+  # replace NA with 0 in count column
+  replace_na(list(count = 0)) 
+```
+
+
+```{r}
+public_id <- public %>%
+  mutate(document_id = row_number()) %>% 
+  mutate(length = ntoken(tokens(origin)))
+
+emotion_counts_public <- public_id %>%
+  unnest_tokens(word, text) %>%    # Tokenize the text into words
+  inner_join(nrc_eil, by = c("word" = "term")) %>% # Join with NRC EIL lexicon
+  group_by(document_id, AffectDimension) %>%  # Group by document_id and category (emotion)
+  summarise(emotion_score = sum(score), .groups = 'drop') %>%  # Count occurrences of each emotion
+  spread(AffectDimension, emotion_score, fill = 0)    # Spread the emotions into columns
+
+emotion_counts_public <- emotion_counts_public %>% 
+  inner_join(public_id, by = "document_id")
+
+# if the score is 0, then keep it as 0, else divide the score by the length of the document and multiply by 100
+emotion_counts_public <- emotion_counts_public %>% 
+  mutate(anger = ifelse(anger == 0, 0, anger*1000/length),
+         fear = ifelse(fear == 0, 0, fear*1000/length),
+         joy = ifelse(joy == 0, 0, joy*1000/length),
+         sadness = ifelse(sadness == 0, 0, sadness*1000/length)) %>% 
+  dplyr::select(-length)
+
+
+```
+
+```{r}
+# filter public by public_emotion$document_id
+public <- public %>% 
+  mutate(document_id = row_number()) %>%
+  filter(document_id %in% emotion_counts_public$document_id)
+```
+
+```{r}
+public_emotion_date <- emotion_counts_public %>%
+  dplyr::select(date, anger, fear, joy, sadness)
+```
+
+
+```{r}
+public_anger <- public_emotion_date %>% 
+  dplyr::select(date, anger) %>% 
+  group_by(date) %>%
+  summarise(count = sum(anger))
+
+public_fear <- public_emotion_date %>%
+  dplyr::select(date, fear) %>% 
+  group_by(date) %>%
+  summarise(count = sum(fear))
+
+public_joy <- public_emotion_date %>%
+  dplyr::select(date, joy) %>% 
+  group_by(date) %>%
+  summarise(count = sum(joy))
+
+public_sadness <- public_emotion_date %>%
+  dplyr::select(date, sadness) %>% 
+  group_by(date) %>%
+  summarise(count = sum(sadness))
+```
+
+```{r}
+# create a df with one column date from 2023-06-01 to 2024-07-01
+date_df <- data.frame(date = seq.Date(as.Date("2023-06-01"), as.Date("2024-07-01"), by = "day"))
+
+# join date_df with public_a01, replace NA with 0
+public_emotion_anger <- merge(date_df, public_anger, by = "date", all.x = TRUE) %>% 
+  # replace NA with 0 in count column
+  replace_na(list(count = 0)) 
+
+public_emotion_fear <- merge(date_df, public_fear, by = "date", all.x = TRUE) %>% 
+  # replace NA with 0 in count column
+  replace_na(list(count = 0)) 
+
+public_emotion_joy <- merge(date_df, public_joy, by = "date", all.x = TRUE) %>% 
+  # replace NA with 0 in count column
+  replace_na(list(count = 0)) 
+
+public_emotion_sadness <- merge(date_df, public_sadness, by = "date", all.x = TRUE) %>% 
+  # replace NA with 0 in count column
+  replace_na(list(count = 0)) 
+```
+
+```{r}
+media_anger_ts <- ts(media_emotion_anger, start = c(2023, 152), frequency = 365) 
+media_anger_ts <- media_anger_ts[, 2]
+public_anger_ts <- ts(public_emotion_anger, start = c(2023, 152), frequency = 365)
+public_anger_ts <- public_anger_ts[, 2]
+
+adf.test(media_anger_ts)
+adf.test(public_anger_ts)
+```
+
+```{r}
+combined_data <- cbind(media_anger_ts, public_anger_ts)
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+```{r}
+media_fear_ts <- ts(media_emotion_fear, start = c(2023, 152), frequency = 365) 
+media_fear_ts <- media_fear_ts[, 2]
+public_fear_ts <- ts(public_emotion_fear, start = c(2023, 152), frequency = 365)
+public_fear_ts <- public_fear_ts[, 2]
+
+adf.test(media_fear_ts)
+adf.test(public_fear_ts)
+```
+
+```{r}
+combined_data <- cbind(media_fear_ts, public_fear_ts)
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+```{r}
+media_joy_ts <- ts(media_emotion_joy, start = c(2023, 152), frequency = 365) 
+media_joy_ts <- media_joy_ts[, 2]
+public_joy_ts <- ts(public_emotion_joy, start = c(2023, 152), frequency = 365)
+public_joy_ts <- public_joy_ts[, 2]
+
+adf.test(media_joy_ts)
+adf.test(public_joy_ts)
+```
+
+```{r}
+combined_data <- cbind(media_joy_ts, public_joy_ts)
+colnames(combined_data) <- c("media", "public")
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+  
+media_to_public_pvalue
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
+```{r}
+media_sadness_ts <- ts(media_emotion_sadness, start = c(2023, 152), frequency = 365) 
+media_sadness_ts <- media_sadness_ts[, 2]
+public_sadness_ts <- ts(public_emotion_sadness, start = c(2023, 152), frequency = 365)
+public_sadness_ts <- public_sadness_ts[, 2]
+
+# check if the time series is stationary
+adf.test(media_sadness_ts)
+adf.test(public_sadness_ts)
+
+# difference the media_sadness_ts
+media_sadness_ts_diff <- diff(media_sadness_ts)
+```
+
+```{r}
+combined_data <- cbind(media_sadness_ts_diff, public_sadness_ts)
+colnames(combined_data) <- c("media", "public")
+combined_data <- na.omit(combined_data)
+
+
+# Determine the optimal lag based on AIC
+var_selection <- VARselect(combined_data, lag.max = 10, type = "const")
+optimal_lag <- var_selection$selection["AIC(n)"]
+var_model <- VAR(combined_data, p = optimal_lag, type = "const")
+
+granger_test_media_to_public <- causality(var_model, cause = "media")
+media_to_public_pvalue <- granger_test_media_to_public$Granger$p.value
+media_to_public_pvalue
+
+# Test if public_count Granger-causes media_count_diff
+granger_test_public_to_media <- causality(var_model, cause = "public")
+public_to_media_pvalue <- granger_test_public_to_media$Granger$p.value
+public_to_media_pvalue
+```
